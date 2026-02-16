@@ -167,14 +167,20 @@
     const JUMP_STRENGTH = 4.8;
     const PIPE_SPEED = 2.5;
     const PIPE_SPAWN_RATE = 90;
-    const PIPE_GAP = 160;
+    const PIPE_GAP_NORMAL = 160;
+    const PIPE_GAP_HARD = 130;
     const PIPE_WIDTH = 55;
+    const DIFFICULTY_THRESHOLD = 20;
 
     let frames = 0;
     let score = 0;
     let highScore = localStorage.getItem('flappyHighScore') || 0;
     let gameRunning = false;
     let gameOver = false;
+
+    function getPipeGap() {
+        return score >= DIFFICULTY_THRESHOLD ? PIPE_GAP_HARD : PIPE_GAP_NORMAL;
+    }
 
     const bird = {
         x: 60,
@@ -242,7 +248,8 @@
         update() {
             if (frames % PIPE_SPAWN_RATE === 0) {
                 const minH = 50;
-                const maxH = canvas.height - PIPE_GAP - 100;
+                const currentGap = getPipeGap();
+                const maxH = canvas.height - currentGap - 100;
                 const topH = Math.floor(Math.random() * (maxH - minH + 1) + minH);
                 this.list.push({ x: canvas.width, top: topH, passed: false });
             }
@@ -251,8 +258,9 @@
                 let p = this.list[i];
                 p.x -= PIPE_SPEED;
 
+                const currentGap = getPipeGap();
                 if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + PIPE_WIDTH) {
-                    if (bird.y - bird.radius < p.top || bird.y + bird.radius > p.top + PIPE_GAP) {
+                    if (bird.y - bird.radius < p.top || bird.y + bird.radius > p.top + currentGap) {
                         triggerGameOver();
                     }
                 }
@@ -275,10 +283,11 @@
             ctx.strokeStyle = '#222';
             ctx.lineWidth = 2;
             this.list.forEach(p => {
+                const currentGap = getPipeGap();
                 ctx.fillRect(p.x, 0, PIPE_WIDTH, p.top);
                 ctx.strokeRect(p.x, 0, PIPE_WIDTH, p.top);
-                ctx.fillRect(p.x, p.top + PIPE_GAP, PIPE_WIDTH, canvas.height);
-                ctx.strokeRect(p.x, p.top + PIPE_GAP, PIPE_WIDTH, canvas.height);
+                ctx.fillRect(p.x, p.top + currentGap, PIPE_WIDTH, canvas.height);
+                ctx.strokeRect(p.x, p.top + currentGap, PIPE_WIDTH, canvas.height);
             });
         }
     };
